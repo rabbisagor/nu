@@ -1,4 +1,5 @@
 import { Department, Course, ExamNotice, TemplateConfig } from '../types';
+import { OFFICIAL_1ST_YEAR_NOTICE } from './nuOfficial1stYearData';
 
 export const INITIAL_DEPARTMENTS: Department[] = [
   { id: 'dept-acc', code: '2501', nameBn: 'হিসাববিজ্ঞান', nameEn: 'Accounting', faculty: 'Business Studies', active: true },
@@ -14,13 +15,24 @@ export const INITIAL_DEPARTMENTS: Department[] = [
   { id: 'dept-his', code: '1501', nameBn: 'ইতিহাস', nameEn: 'History', faculty: 'Arts', active: true },
   { id: 'dept-ihc', code: '1601', nameBn: 'ইসলামের ইতিহাস ও সংস্কৃতি', nameEn: 'Islamic History and Culture', faculty: 'Arts', active: true },
   { id: 'dept-phi', code: '1701', nameBn: 'দর্শন', nameEn: 'Philosophy', faculty: 'Arts', active: true },
+  { id: 'dept-arb', code: '1201', nameBn: 'আরবি', nameEn: 'Arabic', faculty: 'Arts', active: true },
+  { id: 'dept-skt', code: '1301', nameBn: 'সংস্কৃত', nameEn: 'Sanskrit', faculty: 'Arts', active: true },
+  { id: 'dept-is', code: '1801', nameBn: 'ইসলামী শিক্ষা', nameEn: 'Islamic Studies', faculty: 'Arts', active: true },
   { id: 'dept-mat', code: '3701', nameBn: 'গণিত', nameEn: 'Mathematics', faculty: 'Science', active: true },
   { id: 'dept-phy', code: '2701-p', nameBn: 'পদার্থবিজ্ঞান', nameEn: 'Physics', faculty: 'Science', active: true },
   { id: 'dept-che', code: '2801', nameBn: 'রসায়ন', nameEn: 'Chemistry', faculty: 'Science', active: true },
   { id: 'dept-bot', code: '3001', nameBn: 'উদ্ভিদবিজ্ঞান', nameEn: 'Botany', faculty: 'Science', active: true },
   { id: 'dept-zoo', code: '3101', nameBn: 'প্রাণিবিজ্ঞান', nameEn: 'Zoology', faculty: 'Science', active: true },
+  { id: 'dept-bch', code: '2901', nameBn: 'প্রাণ-রসায়ন', nameEn: 'Biochemistry', faculty: 'Science', active: true },
   { id: 'dept-geo', code: '3201', nameBn: 'ভূগোল ও পরিবেশ', nameEn: 'Geography and Environment', faculty: 'Science', active: true },
+  { id: 'dept-soil', code: '3301', nameBn: 'মৃত্তিকাবিজ্ঞান', nameEn: 'Soil Science', faculty: 'Science', active: true },
+  { id: 'dept-psy', code: '3401', nameBn: 'মনোবিজ্ঞান', nameEn: 'Psychology', faculty: 'Social Science', active: true },
+  { id: 'dept-hec', code: '3501', nameBn: 'গার্হস্থ্য অর্থনীতি', nameEn: 'Home Economics', faculty: 'Social Science', active: true },
   { id: 'dept-sta', code: '3601', nameBn: 'পরিসংখ্যান', nameEn: 'Statistics', faculty: 'Science', active: true },
+  { id: 'dept-ant', code: '4001', nameBn: 'নৃ-বিজ্ঞান', nameEn: 'Anthropology', faculty: 'Social Science', active: true },
+  { id: 'dept-env', code: '4401', nameBn: 'পরিবেশ বিজ্ঞান', nameEn: 'Environmental Science', faculty: 'Science', active: true },
+  { id: 'dept-lis', code: '3801', nameBn: 'গ্রন্থাগার ও তথ্য বিজ্ঞান', nameEn: 'Library and Information Science', faculty: 'Arts', active: true },
+  { id: 'dept-mus', code: '4501', nameBn: 'সংগীত', nameEn: 'Music', faculty: 'Arts', active: true },
   { id: 'dept-cse', code: '5001', nameBn: 'কম্পিউটার বিজ্ঞান ও প্রকৌশল', nameEn: 'Computer Science and Engineering', faculty: 'Science', active: true },
 ];
 
@@ -92,6 +104,7 @@ export const INITIAL_COURSES: Course[] = [
 ];
 
 export const INITIAL_NOTICES: ExamNotice[] = [
+  OFFICIAL_1ST_YEAR_NOTICE,
   {
     id: 'notice-h1-2023-rev',
     memoNo: 'NU/Con/Honours-1st/2024/782-Rev-2',
