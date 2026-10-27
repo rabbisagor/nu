@@ -2,7 +2,29 @@ import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 
 /**
- * Downloads a DOM element as a high-definition PNG image
+ * Ensures all SolaimanLipi and Bengali fonts are fully loaded into the browser font cache
+ */
+async function ensureFontsLoaded(): Promise<void> {
+  if (typeof document === 'undefined' || !document.fonts) return;
+  try {
+    await document.fonts.ready;
+    // Pre-warm SolaimanLipi weights
+    await Promise.allSettled([
+      document.fonts.load('400 12px SolaimanLipi'),
+      document.fonts.load('700 12px SolaimanLipi'),
+      document.fonts.load('400 14px SolaimanLipi'),
+      document.fonts.load('700 14px SolaimanLipi'),
+      document.fonts.load('400 16px SolaimanLipi'),
+      document.fonts.load('700 16px SolaimanLipi'),
+      document.fonts.load('700 24px SolaimanLipi'),
+    ]);
+  } catch (err) {
+    console.warn('Font warming warning:', err);
+  }
+}
+
+/**
+ * Downloads a DOM element as a high-definition PNG image matching the exact preview
  */
 export async function downloadRoutineAsPng(elementId: string, filename: string): Promise<boolean> {
   const element = document.getElementById(elementId);
@@ -12,33 +34,74 @@ export async function downloadRoutineAsPng(elementId: string, filename: string):
   }
 
   try {
-    // Wait for SolaimanLipi and web fonts to be fully ready
-    if (document.fonts) {
-      await document.fonts.ready;
-    }
+    await ensureFontsLoaded();
 
+    // Prepare capture options
     const canvas = await html2canvas(element, {
-      scale: 2, // 2x crisp resolution
+      scale: 2, // 2x ultra-crisp resolution
       useCORS: true,
-      allowTaint: false, // Critical: must be false so toDataURL / toBlob doesn't get tainted
+      allowTaint: false,
       backgroundColor: '#ffffff',
       logging: false,
-      windowWidth: 1200, // Fixed width for consistent render
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: 1000,
       onclone: (clonedDoc) => {
+        // Inject font definition into cloned document to guarantee font availability
+        const style = clonedDoc.createElement('style');
+        style.textContent = `
+          @font-face {
+            font-family: 'SolaimanLipi';
+            font-style: normal;
+            font-weight: 400;
+            src: url('/fonts/solaimanlipi-normal.woff2') format('woff2'),
+                 url('https://fonts.maateen.me/solaiman-lipi/solaimanlipi-normal-v1.0.woff2') format('woff2');
+          }
+          @font-face {
+            font-family: 'SolaimanLipi';
+            font-style: normal;
+            font-weight: 700;
+            src: url('/fonts/solaimanlipi-bold.woff2') format('woff2'),
+                 url('https://fonts.maateen.me/solaiman-lipi/solaimanlipi-bold-v1.0.woff2') format('woff2');
+          }
+          #${elementId}, #${elementId} * {
+            font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+          }
+        `;
+        clonedDoc.head.appendChild(style);
+
         const clonedEl = clonedDoc.getElementById(elementId);
         if (clonedEl) {
-          clonedEl.style.transform = 'none';
+          clonedEl.style.width = '840px';
+          clonedEl.style.minWidth = '840px';
+          clonedEl.style.maxWidth = '840px';
+          clonedEl.style.margin = '0 auto';
           clonedEl.style.boxShadow = 'none';
+          clonedEl.style.transform = 'none';
+
+          // Reset all parent containers in cloned DOM so mobile view doesn't constrain or clip the canvas
+          let current: HTMLElement | null = clonedEl.parentElement;
+          while (current && current !== clonedDoc.body) {
+            current.style.width = 'auto';
+            current.style.minWidth = '860px';
+            current.style.overflow = 'visible';
+            current.style.padding = '0';
+            current.style.margin = '0';
+            current = current.parentElement;
+          }
+          clonedDoc.body.style.width = '860px';
+          clonedDoc.body.style.minWidth = '860px';
+          clonedDoc.body.style.overflow = 'visible';
         }
       },
     });
 
-    // Try toBlob first (modern, highly compatible)
     if (canvas.toBlob) {
       return new Promise<boolean>((resolve) => {
         canvas.toBlob((blob) => {
           if (!blob) {
-            // Fallback to toDataURL
             try {
               const dataUrl = canvas.toDataURL('image/png');
               triggerDownload(dataUrl, filename.endsWith('.png') ? filename : `${filename}.png`);
@@ -81,9 +144,7 @@ export async function downloadRoutineAsPdf(
   }
 
   try {
-    if (document.fonts) {
-      await document.fonts.ready;
-    }
+    await ensureFontsLoaded();
 
     const canvas = await html2canvas(element, {
       scale: 2,
@@ -91,7 +152,57 @@ export async function downloadRoutineAsPdf(
       allowTaint: false,
       backgroundColor: '#ffffff',
       logging: false,
-      windowWidth: 1200,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: 1000,
+      onclone: (clonedDoc) => {
+        const style = clonedDoc.createElement('style');
+        style.textContent = `
+          @font-face {
+            font-family: 'SolaimanLipi';
+            font-style: normal;
+            font-weight: 400;
+            src: url('/fonts/solaimanlipi-normal.woff2') format('woff2'),
+                 url('https://fonts.maateen.me/solaiman-lipi/solaimanlipi-normal-v1.0.woff2') format('woff2');
+          }
+          @font-face {
+            font-family: 'SolaimanLipi';
+            font-style: normal;
+            font-weight: 700;
+            src: url('/fonts/solaimanlipi-bold.woff2') format('woff2'),
+                 url('https://fonts.maateen.me/solaiman-lipi/solaimanlipi-bold-v1.0.woff2') format('woff2');
+          }
+          #${elementId}, #${elementId} * {
+            font-family: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+          }
+        `;
+        clonedDoc.head.appendChild(style);
+
+        const clonedEl = clonedDoc.getElementById(elementId);
+        if (clonedEl) {
+          clonedEl.style.width = '840px';
+          clonedEl.style.minWidth = '840px';
+          clonedEl.style.maxWidth = '840px';
+          clonedEl.style.margin = '0 auto';
+          clonedEl.style.boxShadow = 'none';
+          clonedEl.style.transform = 'none';
+
+          let current: HTMLElement | null = clonedEl.parentElement;
+          while (current && current !== clonedDoc.body) {
+            current.style.width = 'auto';
+            current.style.minWidth = '860px';
+            current.style.overflow = 'visible';
+            current.style.padding = '0';
+            current.style.margin = '0';
+            current = current.parentElement;
+          }
+          clonedDoc.body.style.width = '860px';
+          clonedDoc.body.style.minWidth = '860px';
+          clonedDoc.body.style.overflow = 'visible';
+        }
+      },
     });
 
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -106,26 +217,33 @@ export async function downloadRoutineAsPdf(
 
     const pageWidth = orientation === 'l' ? 297 : 210;
     const pageHeight = orientation === 'l' ? 210 : 297;
-    const margin = 8; // 8mm margin
-    const contentWidth = pageWidth - margin * 2;
-    const contentHeight = (canvas.height * contentWidth) / canvas.width;
+    const margin = 8;
+    const usableWidth = pageWidth - margin * 2;
+    const usableHeight = pageHeight - margin * 2;
 
-    if (contentHeight <= pageHeight - margin * 2) {
-      // Single page fits cleanly
-      pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight);
+    const naturalContentHeight = (canvas.height * usableWidth) / canvas.width;
+
+    // Check if it fits on a single page or fits with minor scale adjustment (< 12%)
+    if (naturalContentHeight <= usableHeight) {
+      pdf.addImage(imgData, 'JPEG', margin, margin, usableWidth, naturalContentHeight, undefined, 'FAST');
+    } else if (naturalContentHeight <= usableHeight * 1.15) {
+      // Scale slightly down to fit on a single crisp A4 page
+      const scale = usableHeight / naturalContentHeight;
+      const fitWidth = usableWidth * scale;
+      const xOffset = margin + (usableWidth - fitWidth) / 2;
+      pdf.addImage(imgData, 'JPEG', xOffset, margin, fitWidth, usableHeight, undefined, 'FAST');
     } else {
       // Multi-page handling
-      let heightLeft = contentHeight;
+      let heightLeft = naturalContentHeight;
       let position = margin;
-      const usableHeight = pageHeight - margin * 2;
 
-      pdf.addImage(imgData, 'JPEG', margin, position, contentWidth, contentHeight);
+      pdf.addImage(imgData, 'JPEG', margin, position, usableWidth, naturalContentHeight, undefined, 'FAST');
       heightLeft -= usableHeight;
 
       while (heightLeft > 0) {
-        position = heightLeft - contentHeight + margin;
+        position = heightLeft - naturalContentHeight + margin;
         pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', margin, position, contentWidth, contentHeight);
+        pdf.addImage(imgData, 'JPEG', margin, position, usableWidth, naturalContentHeight, undefined, 'FAST');
         heightLeft -= usableHeight;
       }
     }

@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'SolaimanLipi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/solaimanlipi-normal.woff2') format('woff2'),
+       url('https://fonts.maateen.me/solaiman-lipi/solaimanlipi-normal-v1.0.woff2') format('woff2'),
+       url('https://fonts.maateen.me/solaiman-lipi/solaimanlipi-normal-v1.0.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'SolaimanLipi';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/solaimanlipi-bold.woff2') format('woff2'),
+       url('https://fonts.maateen.me/solaiman-lipi/solaimanlipi-bold-v1.0.woff2') format('woff2'),
+       url('https://fonts.maateen.me/solaiman-lipi/solaimanlipi-bold-v1.0.ttf') format('truetype');
+}
+
 @layer base {
   :root {
     --font-bangla: 'SolaimanLipi', 'Noto Sans Bengali', 'Plus Jakarta Sans', sans-serif;

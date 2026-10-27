@@ -94,7 +94,15 @@ export const RoutinePreviewCard: React.FC<RoutinePreviewCardProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Download Action Toolbar */}
+      {/* Mobile Swipe Hint Banner */}
+      <div className="block sm:hidden bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 rounded-xl p-3 text-xs text-blue-900 dark:text-blue-300 font-solaiman flex items-center gap-2">
+        <span className="text-base shrink-0">📱</span>
+        <span>
+          মোবাইলে রুটিনের সম্পূর্ণ অংশ দেখতে ডানে-বামে সোয়াইপ করুন। ডাউনলোড বাটনে চাপ দিলে সম্পূর্ণ রুটিন এক পৃষ্ঠায় নির্ভুলভাবে সেভ হবে।
+        </span>
+      </div>
+
+      {/* Download Action Toolbar (Top) */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <div>
           <span className="text-xs text-slate-500 dark:text-slate-400 block font-solaiman">
@@ -110,7 +118,7 @@ export const RoutinePreviewCard: React.FC<RoutinePreviewCardProps> = ({
           <button
             onClick={handleDownloadPdf}
             disabled={isExporting}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-blue-900 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl transition-all shadow-md cursor-pointer disabled:opacity-60"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 text-xs sm:text-sm font-bold text-white bg-blue-900 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl transition-all shadow-md cursor-pointer disabled:opacity-60 active:scale-95"
             title="Download A4 PDF"
           >
             {isExporting && exportType === 'pdf' ? (
@@ -125,7 +133,7 @@ export const RoutinePreviewCard: React.FC<RoutinePreviewCardProps> = ({
           <button
             onClick={handleDownloadPng}
             disabled={isExporting}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-emerald-800 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 rounded-xl transition-all border border-emerald-300 dark:border-emerald-800 shadow-xs cursor-pointer disabled:opacity-60"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 text-xs sm:text-sm font-bold text-emerald-800 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 rounded-xl transition-all border border-emerald-300 dark:border-emerald-800 shadow-xs cursor-pointer disabled:opacity-60 active:scale-95"
             title="Download High Quality PNG Image"
           >
             {isExporting && exportType === 'png' ? (
@@ -139,7 +147,7 @@ export const RoutinePreviewCard: React.FC<RoutinePreviewCardProps> = ({
           {/* Browser Print / Native PDF */}
           <button
             onClick={handleNativePrint}
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer border border-slate-200 dark:border-slate-600"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-3 sm:py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer border border-slate-200 dark:border-slate-600"
             title="Print or Save as PDF"
           >
             <Printer className="w-4 h-4" />
@@ -396,6 +404,9 @@ export const RoutinePreviewCard: React.FC<RoutinePreviewCardProps> = ({
               <p style={{ color: '#64748b' }}>
                 * জাতীয় বিশ্ববিদ্যালয় অফিসিয়াল সার্কুলার স্মারক: {notice.memoNo}
               </p>
+              <p style={{ color: '#047857', fontWeight: 600, paddingTop: '4px' }}>
+                ডিজিটাল রূপরেখা ও সংস্করণ প্রস্তুতকারক: মীর রাব্বি হোসেন (Mir Rabbi Hossain)
+              </p>
             </div>
 
             <div className="text-center font-solaiman">
@@ -412,6 +423,48 @@ export const RoutinePreviewCard: React.FC<RoutinePreviewCardProps> = ({
               <p style={{ fontSize: '11px', color: '#475569' }}>জাতীয় বিশ্ববিদ্যালয়, বাংলাদেশ</p>
             </div>
           </div>
+
+          {/* Micro Footer inside Canvas */}
+          <div
+            className="mt-6 pt-2 text-center text-[10px] font-solaiman"
+            style={{
+              borderTop: '1px dashed #e2e8f0',
+              color: '#64748b',
+            }}
+          >
+            NU Smart Honours Routine Generator · Developed with SolaimanLipi Typography · Credit: Mir Rabbi Hossain
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Download Action Bar (Especially convenient for mobile users after scrolling down) */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="text-center sm:text-left">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block font-solaiman">
+            {department.nameBn} ({department.code}) — {formatYearBn(notice.year)} রুটিন ডাউনলোড
+          </span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-solaiman">
+            কারিগরি রূপরেখা: মীর রাব্বি হোসেন (Mir Rabbi Hossain)
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            onClick={handleDownloadPdf}
+            disabled={isExporting}
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-blue-900 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl transition-all shadow-md cursor-pointer disabled:opacity-60 active:scale-95"
+          >
+            <FileDown className="w-4 h-4" />
+            <span>PDF ডাউনলোড</span>
+          </button>
+          <button
+            onClick={handleDownloadPng}
+            disabled={isExporting}
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-emerald-800 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 rounded-xl transition-all border border-emerald-300 dark:border-emerald-800 shadow-xs cursor-pointer disabled:opacity-60 active:scale-95"
+          >
+            <Download className="w-4 h-4" />
+            <span>ছবি ডাউনলোড (PNG)</span>
+          </button>
         </div>
       </div>
     </div>

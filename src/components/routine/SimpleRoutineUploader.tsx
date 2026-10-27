@@ -68,6 +68,11 @@ export const SimpleRoutineUploader: React.FC = () => {
             ? 'বর্ষ ও আপনার বিভাগ নির্বাচন করুন এবং এক ক্লিকেই A4 সাইজ PDF বা ক্লিয়ার PNG ছবি ডাউনলোড করুন।'
             : 'Select your examination year and department to download your timetable in A4 PDF or PNG image.'}
         </p>
+        <div className="pt-1">
+          <span className="inline-block text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+            কারিগরি রূপরেখা ও ডেভেলপমেন্ট: <strong className="text-blue-900 dark:text-blue-400">মীর রাব্বি হোসেন (Mir Rabbi Hossain)</strong>
+          </span>
+        </div>
       </div>
 
       {/* 1. Year Selection Bar */}

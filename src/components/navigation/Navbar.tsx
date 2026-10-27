@@ -9,15 +9,15 @@ export const Navbar: React.FC = () => {
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand Zone */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-900 dark:bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl bg-blue-900 dark:bg-blue-600 text-white flex items-center justify-center font-bold text-base sm:text-lg shadow-sm">
             এনইউ
           </div>
-          <div>
-            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white whitespace-nowrap block leading-tight font-solaiman">
+          <div className="min-w-0">
+            <span className="text-sm sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white truncate block leading-tight font-solaiman">
               {language === 'bn' ? 'জাতীয় বিশ্ববিদ্যালয় রুটিন মেকার' : 'NU Routine Maker'}
             </span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 block whitespace-nowrap leading-none font-solaiman">
+            <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate block leading-none font-solaiman">
               {language === 'bn' ? 'অনার্স ১ম, ২য়, ৩য় ও ৪র্থ (চূড়ান্ত) বর্ষ' : 'Honours 1st, 2nd, 3rd & 4th Year'}
             </span>
           </div>
