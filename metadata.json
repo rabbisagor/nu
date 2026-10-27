@@ -1,0 +1,6 @@
+{
+  "name": "NU Routine Maker",
+  "description": "National University Bangladesh Smart Honours Routine Generator — জাতীয় বিশ্ববিদ্যালয় অনার্স পরীক্ষার রুটিন প্রস্তুতকারক",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
