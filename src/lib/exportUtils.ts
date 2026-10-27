@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 
 /**
@@ -7,41 +7,59 @@ import jsPDF from 'jspdf';
 export async function downloadRoutineAsPng(elementId: string, filename: string): Promise<boolean> {
   const element = document.getElementById(elementId);
   if (!element) {
-    console.error(`Element with id ${elementId} not found.`);
+    console.error(`Element with id "${elementId}" not found.`);
     return false;
   }
 
   try {
-    // Wait for all fonts (especially SolaimanLipi) to finish loading
+    // Wait for SolaimanLipi and web fonts to be fully ready
     if (document.fonts) {
       await document.fonts.ready;
     }
 
-    // Capture with high pixel ratio for print-ready clarity
     const canvas = await html2canvas(element, {
-      scale: 2.5, // Crisp 2.5x retina scaling
+      scale: 2, // 2x crisp resolution
       useCORS: true,
-      logging: false,
+      allowTaint: false, // Critical: must be false so toDataURL / toBlob doesn't get tainted
       backgroundColor: '#ffffff',
-      allowTaint: true,
+      logging: false,
+      windowWidth: 1200, // Fixed width for consistent render
       onclone: (clonedDoc) => {
         const clonedEl = clonedDoc.getElementById(elementId);
         if (clonedEl) {
-          // Ensure element has standard sizing in clone
+          clonedEl.style.transform = 'none';
           clonedEl.style.boxShadow = 'none';
-          clonedEl.style.borderRadius = '0px';
         }
       },
     });
 
-    const dataUrl = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = filename.endsWith('.png') ? filename : `${filename}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    return true;
+    // Try toBlob first (modern, highly compatible)
+    if (canvas.toBlob) {
+      return new Promise<boolean>((resolve) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            // Fallback to toDataURL
+            try {
+              const dataUrl = canvas.toDataURL('image/png');
+              triggerDownload(dataUrl, filename.endsWith('.png') ? filename : `${filename}.png`);
+              resolve(true);
+            } catch (err) {
+              console.error('Canvas export error:', err);
+              resolve(false);
+            }
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          triggerDownload(url, filename.endsWith('.png') ? filename : `${filename}.png`);
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          resolve(true);
+        }, 'image/png');
+      });
+    } else {
+      const dataUrl = canvas.toDataURL('image/png');
+      triggerDownload(dataUrl, filename.endsWith('.png') ? filename : `${filename}.png`);
+      return true;
+    }
   } catch (error) {
     console.error('Error generating PNG image:', error);
     return false;
@@ -58,7 +76,7 @@ export async function downloadRoutineAsPdf(
 ): Promise<boolean> {
   const element = document.getElementById(elementId);
   if (!element) {
-    console.error(`Element with id ${elementId} not found.`);
+    console.error(`Element with id "${elementId}" not found.`);
     return false;
   }
 
@@ -68,11 +86,12 @@ export async function downloadRoutineAsPdf(
     }
 
     const canvas = await html2canvas(element, {
-      scale: 2.5,
+      scale: 2,
       useCORS: true,
-      logging: false,
+      allowTaint: false,
       backgroundColor: '#ffffff',
-      allowTaint: true,
+      logging: false,
+      windowWidth: 1200,
     });
 
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -82,19 +101,20 @@ export async function downloadRoutineAsPdf(
       orientation: orientation === 'l' ? 'landscape' : 'portrait',
       unit: 'mm',
       format: 'a4',
+      compress: true,
     });
 
     const pageWidth = orientation === 'l' ? 297 : 210;
     const pageHeight = orientation === 'l' ? 210 : 297;
-    const margin = 10; // 10mm margin
+    const margin = 8; // 8mm margin
     const contentWidth = pageWidth - margin * 2;
     const contentHeight = (canvas.height * contentWidth) / canvas.width;
 
     if (contentHeight <= pageHeight - margin * 2) {
-      // Single page fits
+      // Single page fits cleanly
       pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight);
     } else {
-      // Multi-page slicing
+      // Multi-page handling
       let heightLeft = contentHeight;
       let position = margin;
       const usableHeight = pageHeight - margin * 2;
@@ -120,7 +140,19 @@ export async function downloadRoutineAsPdf(
 }
 
 /**
- * Trigger clean browser printing
+ * Helper to trigger file download in browser
+ */
+function triggerDownload(url: string, filename: string) {
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/**
+ * Native browser print (always works 100% as fallback)
  */
 export function printRoutine(elementId: string) {
   const element = document.getElementById(elementId);
