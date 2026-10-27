@@ -69,12 +69,65 @@ export const AdminDashboardView: React.FC = () => {
   const [supersedesNoticeId, setSupersedesNoticeId] = useState<string>('');
   const [revisionNotesInput, setRevisionNotesInput] = useState('');
 
-  // Processing state
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'extracting' | 'review' | 'published'>('idle');
   const [processingLogs, setProcessingLogs] = useState<string[]>([]);
   const [extractedItems, setExtractedItems] = useState<ExamScheduleItem[]>([]);
   const [rawTextPaste, setRawTextPaste] = useState('');
   const [uncertainCount, setUncertainCount] = useState(0);
+  const [adminLiveNotices, setAdminLiveNotices] = useState<any[]>([]);
+  const [isLoadingAdminLive, setIsLoadingAdminLive] = useState(false);
+
+  // Fetch live notices from nu.ac.bd for admin
+  const loadAdminLiveNotices = async () => {
+    setIsLoadingAdminLive(true);
+    try {
+      const res = await fetch('/api/nu-notices');
+      const data = await res.json();
+      if (data && data.notices) {
+        setAdminLiveNotices(data.notices.slice(0, 20));
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingAdminLive(false);
+    }
+  };
+
+  const handleAdminImportFromNu = async (noticeItem: any) => {
+    setUploadStatus('extracting');
+    setProcessingLogs([`nu.ac.bd থেকে সার্কুলার গ্রহণ করা হচ্ছে: ${noticeItem.title}`]);
+
+    try {
+      const res = await fetch('/api/analyze-nu-notice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pdfUrl: noticeItem.pdfUrl,
+          title: noticeItem.title,
+          date: noticeItem.date,
+          year: selectedYear,
+        }),
+      });
+
+      const data = await res.json();
+      if (data && data.notice) {
+        setExtractedItems(data.notice.scheduleItems);
+        setExamNameInput(data.notice.examName);
+        setSessionInput(data.notice.session);
+        setMemoNoInput(data.notice.memoNo);
+        setPublishDateInput(data.notice.publishDate);
+        setProcessingLogs((prev) => [
+          ...prev,
+          `পিডিএফ প্রসেসিং সফল! ${data.notice.scheduleItems.length} টি পরীক্ষা সূচি এক্সট্র্যাক্ট করা হয়েছে।`,
+        ]);
+        setUploadStatus('review');
+      }
+    } catch (err) {
+      console.error(err);
+      setProcessingLogs((prev) => [...prev, 'সার্ভার থেকে অ্যানালাইসিসে সমস্যা হয়েছে।']);
+      setUploadStatus('idle');
+    }
+  };
 
   // New Course & Department Modal/Form
   const [newDeptNameBn, setNewDeptNameBn] = useState('');
@@ -527,6 +580,52 @@ export const AdminDashboardView: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Live nu.ac.bd Notice Fast Ingest Banner */}
+          <div className="bg-gradient-to-r from-blue-900 to-indigo-950 text-white rounded-xl p-5 space-y-3 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                <h4 className="text-sm font-bold font-solaiman text-white">
+                  nu.ac.bd/recent-news-notice.php থেকে সরাসরি ১-ক্লিক অটো ইনজেস্ট
+                </h4>
+              </div>
+              <button
+                onClick={loadAdminLiveNotices}
+                disabled={isLoadingAdminLive}
+                className="px-3 py-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/20 rounded-md transition-colors cursor-pointer self-start sm:self-auto"
+              >
+                {isLoadingAdminLive ? 'লোড হচ্ছে...' : 'লাইভ নোটিশের তালিকা দেখুন'}
+              </button>
+            </div>
+
+            {adminLiveNotices.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-white/10 max-h-48 overflow-y-auto">
+                <span className="text-[11px] text-blue-200 block">
+                  একটি নোটিশ নির্বাচন করুন, সিস্টেম স্বয়ংক্রিয়ভাবে পিডিএফ ডাউনলোড ও কোড এক্সট্র্যাক্ট করে নিচের এডিটেবল টেবিলে উপস্থাপন করবে:
+                </span>
+                <div className="space-y-1.5">
+                  {adminLiveNotices.map((n, i) => (
+                    <div
+                      key={i}
+                      className="p-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="truncate">
+                        <span className="font-semibold text-white block truncate">{n.title}</span>
+                        <span className="text-[10px] text-blue-300 font-mono">{n.date} · {n.category}</span>
+                      </div>
+                      <button
+                        onClick={() => handleAdminImportFromNu(n)}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded text-[11px] whitespace-nowrap shrink-0 shadow-xs cursor-pointer"
+                      >
+                        ⚡ বিশ্লেষণ ও লোড করুন
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Upload Area & Raw Text Ingestion */}

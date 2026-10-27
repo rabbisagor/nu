@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { HonoursYear } from '../../types';
 import {
@@ -13,6 +13,8 @@ import {
   Sparkles,
   Download,
   Building,
+  Radio,
+  ExternalLink,
 } from 'lucide-react';
 
 export const HomeView: React.FC = () => {
@@ -26,6 +28,21 @@ export const HomeView: React.FC = () => {
     notices,
     t,
   } = useApp();
+
+  const [liveNotices, setLiveNotices] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/nu-notices')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.notices) {
+          // Take top 3 routine notices
+          const routines = data.notices.filter((n: any) => n.isRoutine).slice(0, 3);
+          setLiveNotices(routines.length > 0 ? routines : data.notices.slice(0, 3));
+        }
+      })
+      .catch((e) => console.log('Notice ticker error:', e));
+  }, []);
 
   const handleYearClick = (year: HonoursYear) => {
     setSelectedYear(year);
@@ -61,10 +78,17 @@ export const HomeView: React.FC = () => {
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-10 lg:p-12 shadow-sm relative overflow-hidden">
-          {/* Subtle top indicator */}
-          <div className="inline-flex items-center gap-2 text-xs font-semibold text-blue-900 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full mb-6 border border-blue-100 dark:border-blue-900/50">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{t.heroTag}</span>
+          {/* Subtle top indicator with live notice sync tag */}
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-blue-900 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-900/50">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{t.heroTag}</span>
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/60 px-3 py-1 rounded-full border border-red-100 dark:border-red-900/40">
+              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+              <span>nu.ac.bd/recent-news-notice.php লাইভ সিঙ্ক সক্রিয়</span>
+            </div>
           </div>
 
           <div className="max-w-3xl space-y-4">
@@ -100,12 +124,45 @@ export const HomeView: React.FC = () => {
               className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-slate-800 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
             >
               <FileText className="w-4 h-4 text-slate-500" />
-              <span>{t.btnLatestNotices}</span>
+              <span>{language === 'bn' ? '🔴 লাইভ নোটিশ বোর্ড (nu.ac.bd)' : '🔴 Live Notices (nu.ac.bd)'}</span>
             </button>
           </div>
 
+          {/* Live Official Notice Ticker */}
+          {liveNotices.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-2">
+                🔴 nu.ac.bd থেকে সর্বশেষ প্রকাশিত নোটিশসমূহ:
+              </span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {liveNotices.map((liveN, i) => (
+                  <div
+                    key={i}
+                    onClick={() => {
+                      setActiveTab('notices');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-600 cursor-pointer transition-colors space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between text-[10px] text-slate-500">
+                      <span>{liveN.date}</span>
+                      <span className="text-blue-600 font-bold">PDF সার্কুলার</span>
+                    </div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 font-solaiman line-clamp-2">
+                      {liveN.title}
+                    </p>
+                    <span className="text-[11px] text-blue-900 dark:text-blue-400 font-semibold inline-flex items-center gap-1">
+                      <span>বিশ্লেষণ করুন ও রুটিন দেখুন</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Official Verification Disclaimer Banner */}
-          <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-start gap-3 text-xs text-slate-500 dark:text-slate-400">
+          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-start gap-3 text-xs text-slate-500 dark:text-slate-400">
             <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
             <span>{t.officialNoticeWarning}</span>
           </div>
