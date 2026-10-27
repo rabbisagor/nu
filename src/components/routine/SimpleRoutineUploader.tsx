@@ -1,21 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
-import { HonoursYear, Department, ExamNotice, RoutineTemplateId } from '../../types';
+import { HonoursYear, Department, ExamNotice } from '../../types';
 import { RoutinePreviewCard } from './RoutinePreviewCard';
-import { TEMPLATE_CONFIGS } from '../../data/nuData';
 import {
   Upload,
   FileText,
-  Image as ImageIcon,
   CheckCircle2,
-  Sparkles,
-  Layers,
-  ArrowRight,
   RefreshCw,
-  Clock,
-  Calendar,
   AlertCircle,
-  FileCheck,
+  Building,
 } from 'lucide-react';
 
 export const SimpleRoutineUploader: React.FC = () => {
@@ -28,9 +21,6 @@ export const SimpleRoutineUploader: React.FC = () => {
     setSelectedYear,
     selectedDepartmentId,
     setSelectedDepartmentId,
-    selectedTemplateId,
-    setSelectedTemplateId,
-    t,
   } = useApp();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -84,7 +74,7 @@ export const SimpleRoutineUploader: React.FC = () => {
       const data = await res.json();
 
       if (data.success && data.notice) {
-        setAnalysisProgress('সকল বিভাগের আলাদা রুটিন তৈরি হচ্ছে...');
+        setAnalysisProgress('সকল বিভাগের আলাদা রুটিন প্রস্তুত হচ্ছে...');
         await new Promise((r) => setTimeout(r, 400));
 
         // Update notice & year
@@ -94,7 +84,6 @@ export const SimpleRoutineUploader: React.FC = () => {
         // Add to context notices
         setNotices((prev) => [data.notice, ...prev.filter((n) => n.id !== data.notice.id)]);
 
-        // Keep or set department
         if (!selectedDepartmentId) {
           setSelectedDepartmentId(departments[0].id);
         }
@@ -110,12 +99,13 @@ export const SimpleRoutineUploader: React.FC = () => {
     }
   };
 
-  // Quick 1-click test with any year's demo routine
+  // Quick 1-click test with any year's routine
   const handleQuickDemoYear = async (year: HonoursYear) => {
     setErrorMsg('');
     setIsAnalyzing(true);
+    const yrLabel = year === '1st' ? '১ম' : year === '2nd' ? '২য়' : year === '3rd' ? '৩য়' : '৪র্থ';
     setUploadedFileName(`Official_Honours_${year}_Year_Routine.pdf`);
-    setAnalysisProgress(`অনার্স ${year === '1st' ? '১ম' : year === '2nd' ? '২য়' : year === '3rd' ? '৩য়' : '৪র্থ'} বর্ষের অফিসিয়াল রুটিন লোড হচ্ছে...`);
+    setAnalysisProgress(`অনার্স ${yrLabel} বর্ষের অফিসিয়াল রুটিন প্রস্তুত হচ্ছে...`);
 
     try {
       const res = await fetch('/api/analyze-routine-upload', {
@@ -129,7 +119,7 @@ export const SimpleRoutineUploader: React.FC = () => {
 
       const data = await res.json();
       if (data.success && data.notice) {
-        await new Promise((r) => setTimeout(r, 400));
+        await new Promise((r) => setTimeout(r, 300));
         setCurrentNotice(data.notice);
         setSelectedYear(year);
         setNotices((prev) => [data.notice, ...prev.filter((n) => n.id !== data.notice.id)]);
@@ -142,44 +132,14 @@ export const SimpleRoutineUploader: React.FC = () => {
     }
   };
 
-  // Trigger hidden file picker
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
 
-  const getYearLabelBn = (y: string) => {
-    switch (y) {
-      case '1st':
-        return 'অনার্স ১ম বর্ষ';
-      case '2nd':
-        return 'অনার্স ২য় বর্ষ';
-      case '3rd':
-        return 'অনার্স ৩য় বর্ষ';
-      case '4th':
-        return 'অনার্স ৪র্থ বর্ষ (চূড়ান্ত)';
-      default:
-        return `${y} বর্ষ`;
-    }
-  };
-
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-      {/* Hero & Upload Zone */}
-      <div className="text-center max-w-2xl mx-auto space-y-3">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white font-solaiman tracking-tight">
-          {language === 'bn'
-            ? 'রুটিনের PDF বা ছবি দিন, বিভাগভিত্তিক রুটিন নিন'
-            : 'Upload Routine PDF or Image, Get Department Timetables'}
-        </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 font-solaiman leading-relaxed">
-          {language === 'bn'
-            ? 'জাতীয় বিশ্ববিদ্যালয়ের যেকোনো বর্ষের অফিসিয়াল রুটিন আপলোড করলেই সিস্টেম স্বয়ংক্রিয়ভাবে বছর শনাক্ত করে প্রতিটি বিভাগের জন্য নির্ভুল ও আলাদা রুটিন তৈরি করে দিবে।'
-            : 'Upload official examination routine PDF or Image. The system detects the Honours year and generates separate timetables for all departments.'}
-        </p>
-      </div>
-
-      {/* Main Drag-and-Drop Upload Area */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border-2 border-dashed border-blue-300 dark:border-blue-900/60 p-8 sm:p-12 text-center shadow-sm hover:border-blue-600 transition-all relative overflow-hidden">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8 font-solaiman">
+      {/* Upload Zone */}
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border-2 border-dashed border-blue-300 dark:border-blue-900/60 p-8 sm:p-10 text-center shadow-xs hover:border-blue-600 transition-all">
         <input
           ref={fileInputRef}
           type="file"
@@ -189,39 +149,41 @@ export const SimpleRoutineUploader: React.FC = () => {
         />
 
         {isAnalyzing ? (
-          <div className="py-6 space-y-4">
-            <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto" />
+          <div className="py-8 space-y-4">
+            <RefreshCw className="w-12 h-12 text-blue-900 dark:text-blue-400 animate-spin mx-auto" />
             <div className="space-y-1">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white font-solaiman">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 {analysisProgress || 'ফাইল বিশ্লেষণ চলছে...'}
               </h3>
               <p className="text-xs text-slate-500">
-                স্বয়ংক্রিয়ভাবে বিষয় কোড ও বিভাগসমূহ ফিল্টার করা হচ্ছে
+                স্বয়ংক্রিয়ভাবে বছর শনাক্ত করে বিভাগভিত্তিক রুটিন তৈরি করা হচ্ছে
               </p>
             </div>
           </div>
         ) : (
-          <div className="space-y-5">
-            <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-900 dark:text-blue-400 mx-auto flex items-center justify-center shadow-xs">
-              <Upload className="w-8 h-8" />
+          <div className="space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-900 dark:text-blue-400 mx-auto flex items-center justify-center">
+              <Upload className="w-7 h-7" />
             </div>
 
-            <div className="space-y-1 max-w-md mx-auto">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white font-solaiman">
+            <div className="space-y-1 max-w-lg mx-auto">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                 {language === 'bn'
-                  ? 'অফিসিয়াল রুটিন PDF বা ছবি (PNG / JPG) আপলোড করুন'
-                  : 'Upload Routine PDF or Image (PNG / JPG)'}
-              </h3>
+                  ? 'অফিসিয়াল রুটিনের PDF বা ছবি (PNG / JPG) আপলোড করুন'
+                  : 'Upload Official Routine PDF or Image'}
+              </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                কম্পিউটার বা মোবাইল থেকে ফাইল ড্র্যাগ করে ছাড়ুন অথবা ব্রাউজ করুন (PDF, PNG, JPG, JPEG)
+                {language === 'bn'
+                  ? 'ফাইল আপলোড করলেই সিস্টেম স্বয়ংক্রিয়ভাবে বর্ষ অনুযায়ী সকল বিভাগের আলাদা রুটিন বানিয়ে দিবে।'
+                  : 'Upload circular PDF or image. The app automatically creates department-wise timetables.'}
               </p>
             </div>
 
-            <div className="flex items-center justify-center gap-3">
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={triggerFileInput}
-                className="px-6 py-3 text-sm font-bold text-white bg-blue-900 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-2"
+                className="px-6 py-3 text-sm font-bold text-white bg-blue-900 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl transition-all shadow-md cursor-pointer inline-flex items-center gap-2"
               >
                 <FileText className="w-4 h-4" />
                 <span>ফাইল নির্বাচন করুন</span>
@@ -229,47 +191,29 @@ export const SimpleRoutineUploader: React.FC = () => {
             </div>
 
             {uploadedFileName && (
-              <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-900">
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-900">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>লোডকৃত ফাইল: {uploadedFileName}</span>
+                <span>সংযুক্ত ফাইল: {uploadedFileName}</span>
               </div>
             )}
 
-            {/* Quick 1-click Test Buttons for all Honours Years */}
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-700/60">
-              <span className="text-xs text-slate-500 block mb-2 font-medium">
-                ফাইল না থাকলে সরাসরি ডেমো রুটিন দিয়ে পরীক্ষা করুন:
-              </span>
-              <div className="flex flex-wrap items-center justify-center gap-2">
+            {/* Quick 1-click Test Buttons */}
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-center gap-2 flex-wrap">
+              <span className="text-[11px] text-slate-400">বর্ষ নির্বাচন:</span>
+              {(['1st', '2nd', '3rd', '4th'] as HonoursYear[]).map((y) => (
                 <button
+                  key={y}
                   type="button"
-                  onClick={() => handleQuickDemoYear('1st')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-blue-950 text-slate-800 dark:text-slate-200 hover:text-blue-900 transition-colors cursor-pointer border border-slate-200 dark:border-slate-600"
+                  onClick={() => handleQuickDemoYear(y)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+                    currentNotice?.year === y
+                      ? 'bg-blue-900 text-white border-blue-900'
+                      : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-600 hover:bg-blue-50'
+                  }`}
                 >
-                  ⚡ অনার্স ১ম বর্ষ রুটিন
+                  {y === '1st' ? '১ম বর্ষ' : y === '2nd' ? '২য় বর্ষ' : y === '3rd' ? '৩য় বর্ষ' : '৪র্থ বর্ষ'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoYear('2nd')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-blue-950 text-slate-800 dark:text-slate-200 hover:text-blue-900 transition-colors cursor-pointer border border-slate-200 dark:border-slate-600"
-                >
-                  ⚡ অনার্স ২য় বর্ষ রুটিন
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoYear('3rd')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-blue-950 text-slate-800 dark:text-slate-200 hover:text-blue-900 transition-colors cursor-pointer border border-slate-200 dark:border-slate-600"
-                >
-                  ⚡ অনার্স ৩য় বর্ষ রুটিন
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoYear('4th')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-blue-950 text-slate-800 dark:text-slate-200 hover:text-blue-900 transition-colors cursor-pointer border border-slate-200 dark:border-slate-600"
-                >
-                  ⚡ অনার্স ৪র্থ বর্ষ (চূড়ান্ত)
-                </button>
-              </div>
+              ))}
             </div>
           </div>
         )}
@@ -282,114 +226,46 @@ export const SimpleRoutineUploader: React.FC = () => {
         </div>
       )}
 
-      {/* GENERATED ROUTINE RESULTS SECTION */}
+      {/* GENERATED ROUTINE RESULTS */}
       {currentNotice && (
-        <div className="space-y-6 pt-2">
-          {/* Detected Year & Notice Summary Banner */}
-          <div className="bg-gradient-to-r from-blue-900 to-indigo-950 text-white p-5 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="bg-emerald-500 text-white font-bold px-2.5 py-0.5 rounded text-xs">
-                  ✓ শনাক্তকৃত
-                </span>
-                <span className="text-blue-200 text-xs font-semibold">
-                  {currentNotice.session} সেশন
-                </span>
-              </div>
-              <h2 className="text-xl font-bold font-solaiman text-white">
-                {currentNotice.examName} — বিভাগীয় রুটিন প্রস্তুত!
-              </h2>
-              <p className="text-xs text-blue-200">
-                স্মারক নং: {currentNotice.memoNo} · প্রকাশের তারিখ: {currentNotice.publishDate}
-              </p>
-            </div>
-
-            {/* Quick Switch Year Buttons */}
-            <div className="flex items-center gap-1.5 bg-black/20 p-1.5 rounded-xl border border-white/10 self-start md:self-auto">
-              <span className="text-[11px] text-blue-200 px-2 font-medium">বর্ষ পরিবর্তন:</span>
-              {(['1st', '2nd', '3rd', '4th'] as HonoursYear[]).map((y) => (
-                <button
-                  key={y}
-                  onClick={() => handleQuickDemoYear(y)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    currentNotice.year === y
-                      ? 'bg-white text-blue-950 shadow-xs'
-                      : 'text-blue-200 hover:text-white'
-                  }`}
-                >
-                  {y} Year
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Department Selection Selector (Horizontal Chips) */}
-          <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3 shadow-xs">
+        <div className="space-y-6">
+          {/* Department Selection Strip */}
+          <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3 shadow-xs">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-blue-600" />
-                <span>আপনার বিভাগ নির্বাচন করুন ({departments.length} টি বিভাগ প্রস্তুত):</span>
+                <Building className="w-4 h-4 text-blue-900 dark:text-blue-400" />
+                <span>আপনার বিভাগ নির্বাচন করুন ({departments.length} টি বিভাগ):</span>
               </label>
-              <span className="text-xs text-blue-900 dark:text-blue-400 font-semibold">
-                নির্বাচিত: {activeDept.nameBn} ({activeDept.code})
+              <span className="text-xs text-blue-900 dark:text-blue-400 font-bold">
+                {activeDept.nameBn} ({activeDept.code})
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1">
+            <div className="flex flex-wrap gap-2 max-h-44 overflow-y-auto p-1">
               {departments.map((dept) => {
                 const isSelected = selectedDepartmentId === dept.id;
                 return (
                   <button
                     key={dept.id}
                     onClick={() => setSelectedDepartmentId(dept.id)}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       isSelected
                         ? 'bg-blue-900 text-white border-blue-900 shadow-sm'
                         : 'bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                   >
-                    <span className="font-solaiman text-[13px]">{dept.nameBn}</span>
-                    <span className="text-[10px] opacity-70 ml-1.5 font-mono">({dept.code})</span>
+                    <span>{dept.nameBn}</span>
+                    <span className="text-[10px] opacity-70 ml-1 font-mono">({dept.code})</span>
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Template Switcher Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-100 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                ডিজাইন রূপরেখা (Template):
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {(Object.keys(TEMPLATE_CONFIGS) as RoutineTemplateId[]).map((tmplKey) => {
-                const conf = TEMPLATE_CONFIGS[tmplKey];
-                const isSelected = selectedTemplateId === tmplKey;
-                return (
-                  <button
-                    key={tmplKey}
-                    onClick={() => setSelectedTemplateId(tmplKey)}
-                    className={`px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-blue-900 text-white shadow-xs'
-                        : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200'
-                    }`}
-                  >
-                    {language === 'bn' ? conf.nameBn : conf.nameEn}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* THE LIVE PREVIEW CARD WITH PNG / PDF EXPORT */}
+          {/* THE LIVE PREVIEW CARD WITH WORKING PNG / PDF EXPORT */}
           <RoutinePreviewCard
             notice={currentNotice}
             department={activeDept}
-            templateId={selectedTemplateId}
           />
         </div>
       )}
